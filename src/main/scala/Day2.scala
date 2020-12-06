@@ -3,6 +3,7 @@ import zio.{IO, UIO, ZIO}
 import scala.io.Source
 
 object Day2 extends Day[Long, Long] {
+
   case class Rule(a: Int, b: Int, c: Char, password: String)
 
   object Rule {
@@ -32,7 +33,8 @@ object Day2 extends Day[Long, Long] {
   def part2(in: String) = ZIO.foreachParN(200)(Source.fromString(in).getLines().map(Rule.fromLine).toList)(secondPolicy(_)).map(_.filter(identity).size)
 
   val inputs = Map(
-      "puzzle" -> """3-5 f: fgfff
+    "puzzle" -> InputString(
+      """3-5 f: fgfff
 6-20 n: qlzsnnnndwnlhwnxhvjn
 6-7 j: jjjjjwrj
 8-10 g: gggggggggg
@@ -1031,6 +1033,6 @@ object Day2 extends Day[Long, Long] {
 3-6 h: hdhjhhhhchh
 11-12 r: zrrkcrrrrrlh
 7-9 v: vhqvlvwvzqwqvrxvjnf
-1-5 r: rvmjr"""
-    )
+1-5 r: rvmjr""")
+  )
 }

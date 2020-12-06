@@ -18,14 +18,15 @@ object Day5 extends Day[Long, Option[Long]] {
   def part2(in: String) = UIO{
     seatIds(in).sorted.sliding(2).find {
       case List(x1, x3) => x3 - x1 == 2
+      case _ => false
     }.map(_.head + 1)
   }
 
   val inputs = Map(
     "example" ->
-      """BFFFBBFRRR
-        |FFFBBBFRRR""".stripMargin,
-    "puzzle" -> """FFBBFFFLRL
+      InputString("""BFFFBBFRRR
+        |FFFBBBFRRR""".stripMargin),
+    "puzzle" -> InputString("""FFBBFFFLRL
                   |FFBBFBBRRL
                   |FBBBFFBLRL
                   |BBFBFFBLRR
@@ -957,6 +958,6 @@ object Day5 extends Day[Long, Option[Long]] {
                   |FFFBBBFRLL
                   |FBBBBBFLLL
                   |BFBFFFFLLL
-                  |""".stripMargin
+                  |""".stripMargin)
   )
 }

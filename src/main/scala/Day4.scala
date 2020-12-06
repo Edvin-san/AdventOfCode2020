@@ -49,10 +49,10 @@ object Day4 extends Day[Long, Long] {
   }
 
   val inputs = Map(
-    "mixed" -> mixed,
-    "invalids" -> invalids,
-    "valids" -> valids,
-    "puzzle" -> puzzle
+    "mixed" -> InputString(mixed),
+    "invalids" -> InputString(invalids),
+    "valids" -> InputString(valids),
+    "puzzle" -> InputString(puzzle)
   )
 
   lazy val mixed =

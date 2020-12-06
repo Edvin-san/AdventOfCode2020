@@ -55,4 +55,6 @@ object Util {
 			def unary_- = Dir(-x, -y)
 		}
 	}
+
+	def normalizeNewLine(s: String) = s.replace("\r\n", "\n")
 }

@@ -17,7 +17,7 @@ object Day1 extends Day[Long, Option[Long]] {
     }).map(_.reduce(_ * _)))
 
   val inputs = Map(
-    "puzzle" -> """1778
+    "puzzle" -> InputString("""1778
                   |1845
                   |1813
                   |1889
@@ -217,7 +217,7 @@ object Day1 extends Day[Long, Option[Long]] {
                   |1625
                   |1478
                   |1453
-                  |""".stripMargin
+                  |""".stripMargin)
   )
 
 }
