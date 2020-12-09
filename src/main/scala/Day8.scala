@@ -1,4 +1,4 @@
-import Day8.Machine._
+import Day8.Machine.{Acc, I, Instruction, InvalidProgramCounter, Jmp, Nop, ProgramState}
 import zio._
 
 import scala.util.{Failure, Success, Try}
