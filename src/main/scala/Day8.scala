@@ -1,6 +1,5 @@
-import Day8.Machine.{Acc, I, Instruction, InvalidProgramCounter, Jmp, Nop, ProgramState}
+import Day8.Machine._
 import zio._
-import zio.duration.durationInt
 
 import scala.util.{Failure, Success, Try}
 
@@ -10,11 +9,8 @@ object Day8 extends Day[Long, Long] {
     type I = Int
 
     sealed trait Instruction
-
     case class Acc(i: I) extends Instruction
-
     case class Jmp(i: I) extends Instruction
-
     case class Nop(i: I) extends Instruction
 
     case class ProgramState(pc: I, instructions: Map[I, Instruction], acc: I)
@@ -49,6 +45,7 @@ object Day8 extends Day[Long, Long] {
 
     def prettyPrint(visited: Set[I]): String = {
       def v(i: I) = if (visited.contains(i)) "*" else " "
+
       s"acc: ${state.acc}\n" + state.instructions.toList.sortBy(_._1).map {
         case (index, instr) => (if (index == state.pc) "--->" else "    ") + v(index) + (instr match {
           case Acc(i) => s"acc ${signedI(i)}"
