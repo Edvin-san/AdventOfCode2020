@@ -54,6 +54,19 @@ object Util {
 		case class Dir(x: Int, y: Int) {
 			def unary_- = Dir(-x, -y)
 		}
+
+		object Dir {
+			val all8Dirs = List(
+        Dir(1, 0),
+        Dir(1, 1),
+        Dir(0, 1),
+        Dir(-1, 1),
+        Dir(-1, 0),
+        Dir(-1, -1),
+        Dir(0, -1),
+        Dir(1, -1))
+		}
+
 	}
 
 	def normalizeNewLine(s: String) = s.replace("\r\n", "\n")
