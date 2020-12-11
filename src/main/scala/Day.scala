@@ -7,25 +7,30 @@ import Day.TestIOOps
 
 trait Day[P1, P2] extends zio.App {
   def logic: RIO[ZEnv, Unit] = {
-//    console.putStrLn(s"Going to run tests for $inputs") *>
+    //    console.putStrLn(s"Going to run tests for $inputs") *>
     ZIO.foreach_(inputs) { case (label, input) =>
-    for {
-      _ <- console.putStrLn(s"----- $label -----")
-      _ <- getInput(input).map(normalizeNewLine).use { in =>
-        for {
-          answers <- ZIO.foreach(List(part1(in), part2(in)))(p => p.catchNotImplemented.timed)
-          _ <- ZIO.foreach(answers.zipWithIndex) { case ((dur, a), idx) => console.putStrLn(s"Part${idx+1}\t$a\t${dur.toMillis}ms")}
-        } yield ()
-      }
-    } yield ()
-  }
+      for {
+        _ <- console.putStrLn(s"----- $label -----")
+        _ <- getInput(input).map(normalizeNewLine).use { in =>
+          for {
+            _ <- ZIO.foreach(List(part1(in), part2(in)).zipWithIndex) { case (p, idx) => p.catchNotImplemented.timed.flatMap {
+              case (dur, a) => console.putStrLn(s"Part${idx + 1}\t$a\t${dur.toMillis}ms")
+            }
+            }
+          } yield ()
+        }
+      } yield ()
+    }
   }
 
   def part1(in: String): RIO[ZEnv, P1]
+
   def part2(in: String): RIO[ZEnv, P2]
 
   sealed trait Input
+
   case class InputString(value: String) extends Input
+
   case class ResourceInput(value: String) extends Input
 
   def getInput(in: Input): ZManaged[Blocking, IOException, String] = in match {
@@ -46,9 +51,11 @@ trait Day[P1, P2] extends zio.App {
 }
 
 object Day {
+
   implicit class TestIOOps[A](zio: RIO[ZEnv, A]) {
     def catchNotImplemented = zio.map(_.toString).catchSome {
       case _: NotImplementedError => ZIO.succeed("Not implemented.")
     }
   }
+
 }
