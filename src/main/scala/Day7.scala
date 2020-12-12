@@ -17,6 +17,7 @@ object Day7 extends Day[Long, BigInt] {
       case "no other bag" => None
       case s => s.split(" ").toList match {
         case num :: b => Some(Bag(b.mkString(" ")) -> num.toLong)
+        case _ => ???
       }
     }.toMap
     BagSpec(Bag(bag), m)

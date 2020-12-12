@@ -53,30 +53,66 @@ object Util {
 
     case class Pos(x: Int, y: Int) {
       def +(direction: Dir): Pos = Pos(x + direction.x, y + direction.y)
+      def -(p: Pos): Pos = Pos(x - p.x, y - p.y)
+      def length: Double = math.sqrt(x*x + y*y)
+      def toDir = Dir(x, y)
     }
 
     case class Dir(x: Int, y: Int) {
+      def +(direction: Dir): Dir = Dir(x + direction.x, y + direction.y)
       def unary_- = Dir(-x, -y)
+
+      def *(i: Int) = Dir(x * i, y * i)
+
+      def rotated90CCW: Dir = {
+        val pc = PolarCoordinate.make(Pos(x, y))
+        val newPc = pc.rotated(math.Pi/2)
+        newPc.toCartesianRounded.toDir
+      }
+
+      def rotated90CW: Dir = {
+        val pc = PolarCoordinate.make(Pos(x, y))
+        val newPc = pc.rotated(-math.Pi/2)
+        newPc.toCartesianRounded.toDir
+      }
     }
 
-    case class PolarCoordinate(r: Double, theta: Double)
+    case class PolarCoordinate(r: Double, theta: Double) {
+      def toCartesianRounded = {
+        val (x, y) = toCartesian
+        Pos(x.round.toInt, y.round.toInt)
+      }
+
+      def toCartesian = (r*math.cos(theta), r*math.sin(theta))
+      def rotated(radians: Double) = this.copy(theta = theta + radians)
+    }
+
     object PolarCoordinate {
-      def make(origo: Pos, p: Pos): PolarCoordinate =
-        PolarCoordinate(dist(origo, p), math.atan2(-(p.y - origo.y), p.x - origo.x))
+      def make(p: Pos): PolarCoordinate =
+        PolarCoordinate(p.length, math.atan2(p.y, p.x))
     }
 
-    def dist(p1: Pos, p2: Pos): Double = math.sqrt(math.pow(p1.x - p2.x, 2) + math.pow(p1.y - p2.y, 2))
+    def dist(p1: Pos, p2: Pos): Double = (p1 - p2).length
 
     object Dir {
+      val North = Dir(0, 1)
+      val NorthEast = Dir(1, 1)
+      val East = Dir(1, 0)
+      val SouthEast = Dir(1, -1)
+      val South = Dir(0, -1)
+      val SouthWest = Dir(-1, -1)
+      val West = Dir(-1, 0)
+      val NorthWest = Dir(-1, 1)
+
       val all8Dirs = List(
-        Dir(1, 0),
-        Dir(1, 1),
-        Dir(0, 1),
-        Dir(-1, 1),
-        Dir(-1, 0),
-        Dir(-1, -1),
-        Dir(0, -1),
-        Dir(1, -1))
+        Dir.North,
+        Dir.NorthEast,
+        Dir.East,
+        Dir.SouthEast,
+        Dir.South,
+        Dir.SouthWest,
+        Dir.West,
+        Dir.NorthWest)
     }
 
   }
