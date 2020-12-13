@@ -49,6 +49,8 @@ object Util {
 
   def lcm(list: Seq[BigInt]): BigInt = list.foldLeft(BigInt(1))((a, b) => (a / gcd(a, b)) * b)
 
+  def ceilDiv(a: Long, b: Long): Long = (a + b - 1) / b
+
   object Vector {
 
     case class Pos(x: Int, y: Int) {
