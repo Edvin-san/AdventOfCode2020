@@ -23,12 +23,14 @@ object Day14 extends Day[Long, Long] {
     for(instr <- parseInput(in)) {
       instr match {
         case SetMask(value) =>
-          andMask = value.replace('X', '1').toLong // TODO want Integer.parseInt(x, 2) but for long
-          orMask = value.replace('X', '0').toLong
+          andMask = java.lang.Long.parseLong(value.replace('X', '1'), 2)
+          orMask = java.lang.Long.parseLong(value.replace('X', '0'), 2)
         case WriteToAddress(address, value) =>
+          val x = (value & andMask) | orMask
+          mem = mem.updated(address, x)
       }
     }
-    ???
+    mem.values.sum
   }
 
   def part2(in: String) = Task.effect{
