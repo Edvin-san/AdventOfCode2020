@@ -1,41 +1,106 @@
 import zio._
 
 object Day16 extends Day[Long, Long] {
-  case class Interval(start: Int, end: Int)
-  def part1(in: String) = Task.effect {
-    val (rulesS, myTicketS, nearbyTicketsS) = in.split("\n\n") match {
+  case class Interval(start: Int, end: Int) {
+    def contains(x: Int): Boolean = start <= x && end >= x
+  }
+  case class Rule(name: String, i1: Interval, i2: Interval) {
+    def contains(x: Int): Boolean = i1.contains(x) || i2.contains(x)
+  }
+  type Ticket = List[Int]
+
+  def parseInput(s: String): (List[Rule], Ticket, List[Ticket]) = {
+    val (rulesS, myTicketS, nearbyTicketsS) = s.split("\n\n") match {
       case Array(rulesS, myTicketS, nearbyTicketsS) => (rulesS, myTicketS, nearbyTicketsS)
     }
-    val intervals = rulesS.split("\n").flatMap { s =>
-      s.split(": ")(1).split(" or ").map(x => x.split("-") match {
+    val rules = rulesS.split("\n").map { s =>
+      val l = s.split(": ")
+      val name = l.head
+      val intervals = l.last.split(" or ").map(x => x.split("-") match {
         case Array(start, end) => Interval(start.toInt, end.toInt)
       })
+      Rule(name, intervals.head, intervals.last)
     }.toList
-    nearbyTicketsS.split("\n").drop(1).flatMap { line =>
-      line.split(",").map(_.toInt).filter(x => intervals.find(interval => interval.start <= x && interval.end >= x).isEmpty)
-    }.sum
-//    println(intervals.mkString("\n"))
-//    -1
+
+    def parseTicket(t: String): Ticket = t.split(",").map(_.toInt).toList
+
+    val myTicket = parseTicket(myTicketS.split("\n").last)
+    val otherTickets = nearbyTicketsS.split("\n").drop(1).map(parseTicket).toList
+    (rules, myTicket, otherTickets)
+  }
+
+  def part1(in: String) = Task.effect {
+    val (rules, _, nearbyTickets) = parseInput(in)
+    val invalidTicketNumbers = nearbyTickets.flatMap { ticket =>
+      ticket.filter(x => rules.find(_.contains(x)).isEmpty)
+    }
+    invalidTicketNumbers.sum
+  }
+
+  case class FieldId(idx: Int) extends AnyVal
+
+  // TODO should probably clean up since it can't be run on multiple examples.
+  var memo: Map[(Int, Set[Rule]), Option[Map[Rule, FieldId]]] = Map()
+  def p2(remaining: List[FieldId], fieldPossibleRules: Map[FieldId, List[Rule]], takenRules: Set[Rule], depth: Int): Option[Map[Rule, FieldId]] = remaining match {
+    case Nil => Some(Map())
+    case _ if memo.isDefinedAt((depth, takenRules)) => memo((depth, takenRules)) // Memoization was key!
+    case head :: tail =>
+      val res = (for {
+      rule <- LazyList.from(fieldPossibleRules(head).filterNot(takenRules.contains))
+      _ = if (depth == 0) println(s"Working on $head, '${rule.name}' out of ${fieldPossibleRules(head).filterNot(takenRules.contains).map(_.name)}")
+//      else println(s"depth: $depth")
+      newTakenRules = takenRules + rule
+      res = if (tail.exists(fid => fieldPossibleRules(fid).filterNot(newTakenRules.contains).isEmpty)) None
+      else p2(tail, fieldPossibleRules, newTakenRules, depth + 1).map(_.updated(rule, head))
+    } yield res).find(_.isDefined).map(_.get)
+      memo = memo.updated((depth, takenRules), res)
+      res
   }
 
   def part2(in: String) = Task.effect {
-    ???
+    val (rules, myTicket, nearbyTickets) = parseInput(in)
+    val validNearbyTickets = nearbyTickets.filter(ticket => ticket.forall(x => rules.exists(_.contains(x))))
+//    println(validNearbyTickets.mkString("VALID NEARBY\n", "\n", ""))
+    val allValidTickets = myTicket :: validNearbyTickets
+    val fieldValues = allValidTickets.transpose.zipWithIndex.map { case (values, idx) => (FieldId(idx), values)}
+    val fieldPossibleRules = fieldValues.map { case (fieldId, values) =>
+      fieldId -> rules.filter(rule => values.forall(rule.contains))
+    }
+    val assignment = p2(fieldPossibleRules.map(_._1), fieldPossibleRules.toMap, Set(), 0).get
+    println(s"assignment: $assignment")
+    println(s"myTicket: $myTicket")
+    println(s"departure rules: ${assignment.filter(_._1.name.startsWith("departure"))}")
+    println(s"values in my ticket: ${assignment.filter(_._1.name.startsWith("departure")).map(t => myTicket(t._2.idx).toLong)}")
+
+    assignment.filter(_._1.name.startsWith("departure")).map(t => myTicket(t._2.idx).toLong).product
   }
 
   val inputs = Map(
-    "example" -> InputString(
-      """class: 1-3 or 5-7
-        |row: 6-11 or 33-44
-        |seat: 13-40 or 45-50
-        |
-        |your ticket:
-        |7,1,14
-        |
-        |nearby tickets:
-        |7,3,47
-        |40,4,50
-        |55,2,20
-        |38,6,12""".stripMargin),
+//    "example" -> InputString(
+//      """class: 1-3 or 5-7
+//        |row: 6-11 or 33-44
+//        |seat: 13-40 or 45-50
+//        |
+//        |your ticket:
+//        |7,1,14
+//        |
+//        |nearby tickets:
+//        |7,3,47
+//        |40,4,50
+//        |55,2,20
+//        |38,6,12""".stripMargin),
+//    "example2" -> InputString(
+//      """class: 0-1 or 4-19
+//        |row: 0-5 or 8-19
+//        |seat: 0-13 or 16-19
+//        |
+//        |your ticket:
+//        |11,12,13
+//        |
+//        |nearby tickets:
+//        |3,9,18
+//        |15,1,5
+//        |5,14,9""".stripMargin),
     "puzzle" -> InputString(
       """departure location: 50-692 or 705-969
         |departure station: 35-540 or 556-965
