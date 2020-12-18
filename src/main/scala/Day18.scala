@@ -6,23 +6,34 @@ object Day18 extends Day[Long, Long] {
   case class Operator(o: Char) extends Expression
   case class Paren(exprs: List[Expression]) extends Expression
 
-  def parseInput(in: String) = {
-    def inner(symbols: List[String], openParens: Int) = symbols match {
+  def parseLine(in: String): Paren = {
+    println(s"Trying to parse $in")
+    def inner(symbols: List[String], acc: List[Expression]): (List[Expression], List[String]) = symbols match {
       case head :: tail => head match {
-        case '(' => ???
-        case ')' => ???
-        case '+' => ???
-        case '*' => ???
-        case num => ???
+        case "("=>
+          val (inParen, remaining) = inner(tail, List())
+          val (restInMyLevel, remainingAfterMyLevel) = inner(remaining, acc.appended(Paren(inParen)))
+          (restInMyLevel, remainingAfterMyLevel)
+        case ")" => (acc, tail)
+        case "+" => inner(tail, acc.appended(Operator('+')))
+        case "*" => inner(tail, acc.appended(Operator('*')))
+        case num => inner(tail, acc.appended(Constant(num.toInt)))
       }
-      case Nil => ???
+      case Nil => (acc, Nil)
     }
     val cleaned = in.replace("(", " ( ").replace(")", " ) ")
-    parseInput(cleaned.split("\s+").toList)
+    val tokenized = cleaned.split("\\s+").toList
+    println(s"tokenized: $tokenized")
+    val (exprs, leftover) = inner(tokenized, Nil)
+    assert(leftover == Nil)
+    println(s"Parsed $in to ${Paren(exprs)}")
+    Paren(exprs)
   }
 
   def part1(in: String) = Task.effect{
-    ???
+    println(in)
+    val exprs = in.split("\n").filter(!_.isEmpty).map(parseLine)
+    -1
   }
 
   def part2(in: String) = Task.effect{
