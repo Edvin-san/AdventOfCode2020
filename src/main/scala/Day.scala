@@ -8,7 +8,7 @@ import Day.TestIOOps
 trait Day[P1, P2] extends zio.App {
   def logic: RIO[ZEnv, Unit] = {
     //    console.putStrLn(s"Going to run tests for $inputs") *>
-    ZIO.foreach_(inputs) { case (label, input) =>
+    ZIO.foreach_(inputs.toList.sortBy(_._1)) { case (label, input) =>
       for {
         _ <- console.putStrLn(s"----- $label -----")
         _ <- getInput(input).map(normalizeNewLine).use { in =>
