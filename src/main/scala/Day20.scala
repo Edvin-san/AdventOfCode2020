@@ -150,6 +150,7 @@ object Day20 extends Day[BigInt, BigInt] {
     val tiles = parseInput(in).map(t => (t.id, t)).toMap
     val tileConnections = findConnections(tiles)
     val sol = solve1(tiles, tileConnections).get
+    tiles.values.map(_.orientations.flatMap(_.borderHash.values.toSet).toSet)
 //    println(sol.map(_.map(_.tileId).mkString(" ")).mkString("\n"))
     val corners = List(sol.head.head, sol.head.last, sol.last.head, sol.last.last).map(_.tileId)
     corners.map(BigInt(_)).product
